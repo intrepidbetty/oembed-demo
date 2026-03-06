@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trovee — oEmbed Integration Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #F5F1ED;
+      --cream-dark: #EDE8E2;
+      --pink: #FF2D55;
+      --pink-light: #FFE8ED;
+      --pink-glow: rgba(255, 45, 85, 0.08);
+      --text: #1A1410;
+      --text-muted: #7A6F68;
+      --text-light: #A89E97;
+      --border: #DDD8D2;
+      --white: #FFFFFF;
+      --green: #27AE60;
+      --green-light: #E8F8EF;
+      --red: #E74C3C;
+      --red-light: #FDE8E6;
+      --code-bg: #1E1B18;
+      --code-text: #E8E0D8;
+      --radius: 12px;
+      --radius-lg: 20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .page-header {
+      text-align: center;
+      padding: 56px 24px 40px;
+      max-width: 720px;
+      margin: 0 auto;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .logo {
+      font-family: 'Outfit', sans-serif;
+      font-size: 26px;
+      font-weight: 500;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      margin-bottom: 28px;
+      display: block;
+    }
+    .logo span { color: var(--pink); }
+
+    .badge {
+      display: inline-block;
+      background: var(--pink-light);
+      color: var(--pink);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 4.5vw, 36px);
+      font-weight: 400;
+      line-height: 1.25;
+      letter-spacing: -0.3px;
+      margin-bottom: 14px;
+    }
+    .page-title em { font-style: italic; color: var(--pink); }
+
+    .page-sub {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    .card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      box-shadow: 0 2px 24px rgba(26,20,16,0.05), 0 1px 4px rgba(26,20,16,0.03);
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .card:nth-child(2) { animation-delay: 0.08s; }
+    .card:nth-child(3) { animation-delay: 0.16s; }
+
+    @media (max-width: 500px) { .card { padding: 24px 18px; } }
+
+    .card-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-label .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      background: var(--pink);
+      color: var(--white);
+      border-radius: 50%;
+      font-size: 10px;
+      font-weight: 600;
+      margin-right: 8px;
+      position: relative;
+      top: -1px;
+    }
+
+    .flow-diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px 0;
+      flex-wrap: nowrap;
+    }
+
+    .flow-node {
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .flow-node.highlight {
+      border-color: var(--pink);
+      background: var(--pink-light);
+      color: var(--pink);
+    }
+
+    .flow-arrow { color: var(--text-light); font-size: 18px; flex-shrink: 0; }
+
+    .flow-description {
+      margin-top: 16px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-muted);
+      font-weight: 300;
+      text-align: center;
+    }
+
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .input-row { display: flex; gap: 10px; }
+    @media (max-width: 500px) { .input-row { flex-direction: column; } }
+
+    .text-input {
+      flex: 1;
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 13px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+    .text-input:focus {
+      border-color: var(--pink);
+      box-shadow: 0 0 0 3px var(--pink-glow);
+      background: var(--white);
+    }
+    .text-input::placeholder { color: #B5ADA8; font-weight: 300; }
+
+    .btn {
+      padding: 13px 28px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--pink); color: var(--white); }
+    .btn-primary:hover {
+      background: #E5274D;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255,45,85,0.25);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled {
+      background: var(--border);
+      color: var(--text-light);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .status-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      margin-top: 16px;
+      font-size: 13px;
+    }
+    .status-bar.visible { display: flex; }
+    .status-bar.success { background: var(--green-light); color: var(--green); }
+    .status-bar.error { background: var(--red-light); color: var(--red); }
+    .status-bar.loading { background: var(--pink-light); color: var(--pink); }
+
+    .status-icon { width: 18px; height: 18px; flex-shrink: 0; }
+    .status-details {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      margin-left: auto;
+      opacity: 0.7;
+    }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid var(--pink-light);
+      border-top-color: var(--pink);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      flex-shrink: 0;
+    }
+
+    .status-bar.pending { background: #FFF8E1; color: #F59E0B; }
+
+    .pending-notice {
+      display: none;
+      background: #FFF8E1;
+      border: 1.5px solid #FDE68A;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-top: 20px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #92400E;
+    }
+    .pending-notice.visible { display: block; }
+    .pending-notice strong { color: #78350F; }
+
+    .results-area { margin-top: 28px; display: none; }
+    .results-area.visible { display: block; }
+
+    .result-tabs { display: flex; gap: 0; border-bottom: 1.5px solid var(--border); }
+    .result-tab {
+      padding: 10px 20px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+    .result-tab:hover { color: var(--text); }
+    .result-tab.active { color: var(--pink); }
+    .result-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1.5px; left: 0; right: 0;
+      height: 2px;
+      background: var(--pink);
+      border-radius: 2px 2px 0 0;
+    }
+
+    .result-panel { display: none; padding-top: 20px; }
+    .result-panel.active { display: block; }
+
+    .json-output {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: var(--radius);
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .json-key { color: #FF8A80; }
+    .json-string { color: #80CBC4; }
+    .json-number { color: #FFD180; }
+    .json-bool { color: #CE93D8; }
+
+    .embed-preview {
+      background: var(--cream);
+      border-radius: var(--radius);
+      padding: 24px;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .embed-preview iframe { max-width: 100%; border: none; border-radius: 8px; }
+    .embed-placeholder {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 14px;
+      font-weight: 300;
+    }
+
+    .thumbnail-section { margin-top: 20px; display: none; }
+    .thumbnail-section.visible { display: block; }
+
+    .thumbnail-grid { display: flex; gap: 16px; align-items: flex-start; }
+    .thumbnail-img {
+      width: 200px; height: 200px;
+      object-fit: cover;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+    }
+    .thumbnail-meta { flex: 1; font-size: 13px; line-height: 1.7; }
+    .thumbnail-meta dt {
+      font-weight: 500; color: var(--text-muted);
+      font-size: 11px; letter-spacing: 0.5px;
+      text-transform: uppercase; margin-top: 12px;
+    }
+    .thumbnail-meta dt:first-child { margin-top: 0; }
+    .thumbnail-meta dd { color: var(--text); margin: 2px 0 0 0; }
+
+    @media (max-width: 500px) {
+      .thumbnail-grid { flex-direction: column; }
+      .thumbnail-img { width: 100%; height: 200px; }
+    }
+
+    .demo-footer {
+      text-align: center;
+      padding: 40px 20px 48px;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .demo-footer p {
+      font-size: 13px; color: var(--text-light);
+      font-weight: 300; line-height: 1.6;
+    }
+    .demo-footer a { color: var(--pink); text-decoration: none; }
+    .demo-footer a:hover { text-decoration: underline; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="logo">trov<span>ee</span></div>
+    <div class="badge">oEmbed Integration Demo</div>
+    <h1 class="page-title">Live <em>oEmbed</em> API Testing</h1>
+    <p class="page-sub">This page demonstrates Trovee's live integration with the Instagram oEmbed API. Enter any public Instagram URL to see the full request/response cycle in real time.</p>
+  </header>
+
+  <div class="container">
+
+    <div class="card">
+      <div class="card-label">Integration Flow</div>
+      <div class="flow-diagram">
+        <div class="flow-node">Instagram URL</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node highlight">Trovee Server</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">Meta oEmbed API</div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node highlight">Embed Data</div>
+      </div>
+      <p class="flow-description">When a user saves an Instagram post in Trovee, our server calls Meta's oEmbed API to fetch the post's thumbnail, caption, and author data. This powers Trovee's automatic content organization and content details.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><span class="step-num">1</span> Enter an Instagram URL</div>
+
+      <div class="field">
+        <label class="field-label">Public Instagram Post or Reel URL</label>
+        <div class="input-row">
+          <input type="text" id="instagramUrl" class="text-input" placeholder="https://www.instagram.com/p/..." />
+          <button class="btn btn-primary" id="testBtn" onclick="testOembed()">Fetch Embed</button>
+        </div>
+      </div>
+
+      <div class="status-bar" id="statusBar">
+        <span id="statusIcon"></span>
+        <span id="statusText"></span>
+        <span class="status-details" id="statusDetails"></span>
+      </div>
+
+      <div class="pending-notice" id="pendingNotice">
+        <strong>Integration verified &mdash; permission pending.</strong> The request successfully reached Meta's oEmbed API, confirming the integration is wired up correctly. The API returned a 400 because the Meta oEmbed Read permission has not yet been approved. Once granted, this same request will return the full oEmbed payload (thumbnail, caption, author, and embed HTML). A sample of the expected response is shown below.
+      </div>
+
+      <div class="thumbnail-section" id="thumbnailSection">
+        <div class="thumbnail-grid">
+          <img id="thumbnailImg" class="thumbnail-img" src="" alt="Content thumbnail" />
+          <dl class="thumbnail-meta">
+            <dt>Author</dt>
+            <dd id="metaAuthor">&mdash;</dd>
+            <dt>Caption</dt>
+            <dd id="metaCaption">&mdash;</dd>
+            <dt>Content Type</dt>
+            <dd id="metaType">&mdash;</dd>
+            <dt>Provider</dt>
+            <dd id="metaProvider">&mdash;</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="results-area" id="resultsArea">
+        <div class="result-tabs">
+          <button class="result-tab active" data-tab="json" onclick="switchTab('json')">JSON Response</button>
+          <button class="result-tab" data-tab="embed" onclick="switchTab('embed')">Rendered Embed</button>
+          <button class="result-tab" data-tab="request" onclick="switchTab('request')">Request Info</button>
+        </div>
+
+        <div class="result-panel active" id="panel-json">
+          <div class="json-output" id="jsonOutput"></div>
+        </div>
+
+        <div class="result-panel" id="panel-embed">
+          <div class="embed-preview" id="embedPreview">
+            <div class="embed-placeholder">Fetching embed...</div>
+          </div>
+        </div>
+
+        <div class="result-panel" id="panel-request">
+          <div class="json-output" id="requestOutput"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label"><span class="step-num">2</span> Supported Platforms</div>
+      <p class="flow-description" style="text-align:left;margin-top:0;">Trovee's oEmbed integration currently supports the following platforms. Instagram posts can already be shared to Trovee, but automatic content organization and detail extraction require oEmbed API access to be approved by Meta.</p>
+      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+        <div class="flow-node highlight">Instagram &mdash; Posts &amp; Reels</div>
+        <div class="flow-node">TikTok &mdash; Videos</div>
+        <div class="flow-node">Pinterest &mdash; Pins</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="demo-footer">
+    <p>Trovee &mdash; Content collected, intelligently.<br>This demo is provided for Meta oEmbed API integration review.<br><a href="https://mytrovee.app/privacy.html">Privacy</a> &middot; <a href="https://mytrovee.app/terms.html">Terms</a></p>
+  </div>
+
+  <script>
+    function showStatus(type, message, details) {
+      var bar = document.getElementById('statusBar');
+      var icon = document.getElementById('statusIcon');
+      var text = document.getElementById('statusText');
+      var det = document.getElementById('statusDetails');
+      bar.className = 'status-bar visible ' + type;
+      text.textContent = message;
+      det.textContent = details || '';
+      if (type === 'loading') {
+        icon.innerHTML = '<div class="spinner"></div>';
+      } else if (type === 'success') {
+        icon.innerHTML = '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+      } else {
+        icon.innerHTML = '<svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.result-tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.result-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.querySelector('[data-tab="' + tab + '"]').classList.add('active');
+      document.getElementById('panel-' + tab).classList.add('active');
+    }
+
+    function highlightJSON(obj) {
+      var json = JSON.stringify(obj, null, 2);
+      return json.replace(
+        /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+        function(match) {
+          var cls = 'json-number';
+          if (/^"/.test(match)) {
+            cls = /:$/.test(match) ? 'json-key' : 'json-string';
+          } else if (/true|false/.test(match)) {
+            cls = 'json-bool';
+          } else if (/null/.test(match)) {
+            cls = 'json-bool';
+          }
+          return '<span class="' + cls + '">' + match + '</span>';
+        }
+      );
+    }
+
+    async function testOembed() {
+      var url = document.getElementById('instagramUrl').value.trim();
+      var btn = document.getElementById('testBtn');
+
+      if (!url) { showStatus('error', 'Please enter a URL'); return; }
+
+      var supported = ['instagram.com', 'tiktok.com', 'pinterest.com'];
+      var isSupported = supported.some(function(d) { return url.includes(d); });
+      if (!isSupported) { showStatus('error', 'Please enter a URL from Instagram, TikTok, or Pinterest'); return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Fetching...';
+      document.getElementById('thumbnailSection').className = 'thumbnail-section';
+      document.getElementById('resultsArea').className = 'results-area';
+      document.getElementById('pendingNotice').className = 'pending-notice';
+      showStatus('loading', 'Calling oEmbed API...');
+
+      var startTime = performance.now();
+
+      try {
+        var apiUrl = '/api/oembed?url=' + encodeURIComponent(url);
+        var response = await fetch(apiUrl);
+        var elapsed = Math.round(performance.now() - startTime);
+
+        if (!response.ok) {
+          var errData = {};
+          try { errData = await response.json(); } catch(e) {}
+          throw new Error(errData.error || 'HTTP ' + response.status);
+        }
+
+        var data = await response.json();
+
+        // Check if this is a permission-pending response
+        if (data._error && data._error.permission_pending) {
+          showStatus('loading', 'API request sent successfully \u2014 permission pending approval', elapsed + 'ms');
+          document.getElementById('statusBar').className = 'status-bar visible pending';
+
+          // Show the pending notice
+          document.getElementById('pendingNotice').className = 'pending-notice visible';
+
+          // Show live request details in JSON tab
+          document.getElementById('jsonOutput').innerHTML =
+            '<span style="color:#FFD180;font-weight:bold;">// Live API Response (permission pending)</span>\n' +
+            highlightJSON(data._error) +
+            '\n\n<span style="color:#FFD180;font-weight:bold;">// Expected Response Once Approved</span>\n' +
+            highlightJSON(data._sample_response);
+
+          // Show sample embed
+          var embedPreview = document.getElementById('embedPreview');
+          embedPreview.innerHTML = '<div class="embed-placeholder">Instagram embed will render here once Meta oEmbed Read permission is approved.</div>';
+
+          // Show request info
+          var requestInfo = {
+            live_request: data._live_request,
+            auth: {
+              method: 'App ID + App Secret token',
+              format: 'access_token={INSTAGRAM_APP_ID}|{INSTAGRAM_APP_SECRET}',
+              note: 'Credentials stored as environment variables on Trovee server'
+            },
+            status: 'Request reached Meta API successfully. Returned 400 because Meta oEmbed Read permission is pending approval.',
+            next_step: 'Once permission is granted, this same request will return full oEmbed data (thumbnail, caption, author, embed HTML).'
+          };
+          document.getElementById('requestOutput').innerHTML = highlightJSON(requestInfo);
+
+          // Show sample thumbnail
+          if (data._sample_response && data._sample_response.thumbnail_url) {
+            document.getElementById('thumbnailImg').src = data._sample_response.thumbnail_url;
+            document.getElementById('metaAuthor').textContent = 'Available once approved';
+            document.getElementById('metaCaption').textContent = 'Available once approved';
+            document.getElementById('metaProvider').textContent = 'Instagram';
+            document.getElementById('metaType').textContent = url.includes('/reel/') ? 'Video' : 'Image';
+            document.getElementById('thumbnailSection').className = 'thumbnail-section visible';
+          }
+
+          document.getElementById('resultsArea').className = 'results-area visible';
+          return;
+        }
+
+        // Normal success flow
+        showStatus('success', 'oEmbed data received successfully', elapsed + 'ms');
+
+        if (data.thumbnail_url) {
+          document.getElementById('thumbnailImg').src = data.thumbnail_url;
+          document.getElementById('metaAuthor').textContent = data.author_name || '\u2014';
+          document.getElementById('metaCaption').textContent = (data.title || '\u2014').substring(0, 200);
+          document.getElementById('metaProvider').textContent = data.provider_name || '\u2014';
+          var contentType = 'Image';
+          if (url.includes('/reel/') || url.includes('/reels/') || url.includes('tiktok.com')) contentType = 'Video';
+          document.getElementById('metaType').textContent = contentType;
+          document.getElementById('thumbnailSection').className = 'thumbnail-section visible';
+        }
+
+        document.getElementById('jsonOutput').innerHTML = highlightJSON(data);
+
+        var embedPreview = document.getElementById('embedPreview');
+        if (data.html) {
+          embedPreview.innerHTML = data.html;
+          if (data.html.includes('instagram-media')) {
+            var old = document.querySelector('script[src*="instagram.com/embed"]');
+            if (old) old.remove();
+            var s = document.createElement('script');
+            s.src = 'https://www.instagram.com/embed.js';
+            s.async = true;
+            document.body.appendChild(s);
+            s.onload = function() { if (window.instgrm) window.instgrm.Embeds.process(); };
+          }
+        } else {
+          embedPreview.innerHTML = '<div class="embed-placeholder">No HTML embed in response (thumbnail available above)</div>';
+        }
+
+        var requestInfo = {
+          demo_request: {
+            method: 'GET',
+            url: window.location.origin + apiUrl,
+            note: 'Browser calls Trovee server endpoint'
+          },
+          server_request: {
+            method: 'GET',
+            endpoint: 'https://graph.facebook.com/v25.0/instagram_oembed',
+            params: { url: url, access_token: '{INSTAGRAM_APP_ID}|{INSTAGRAM_APP_SECRET}' },
+            note: 'Trovee server calls Meta oEmbed API (credentials hidden server-side)'
+          },
+          response_time: elapsed + 'ms'
+        };
+        document.getElementById('requestOutput').innerHTML = highlightJSON(requestInfo);
+        document.getElementById('resultsArea').className = 'results-area visible';
+
+      } catch (err) {
+        var elapsed2 = Math.round(performance.now() - startTime);
+        showStatus('error', err.message, elapsed2 + 'ms');
+        document.getElementById('jsonOutput').innerHTML = highlightJSON({ error: err.message });
+        document.getElementById('requestOutput').innerHTML = highlightJSON({ request: '/api/oembed?url=' + encodeURIComponent(url), error: err.message });
+        document.getElementById('resultsArea').className = 'results-area visible';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Fetch Embed';
+      }
+    }
+
+    document.getElementById('instagramUrl').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') testOembed();
+    });
+  </script>
+</body>
+</html>
