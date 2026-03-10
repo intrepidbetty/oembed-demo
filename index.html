@@ -375,9 +375,9 @@
       <div class="card">
         <ol class="flow-list">
           <li>A user saves an Instagram post or reel to Trovee via the iOS share extension.</li>
-          <li>Trovee's backend server calls Meta's oEmbed API to retrieve the post's thumbnail, caption, and author metadata.</li>
-          <li>This metadata powers automatic content classification into organized collections and enriched detail pages within the app.</li>
-          <li>The oEmbed API is called server-side only. Metadata is used internally for content organization and is never displayed publicly or redistributed.</li>
+          <li>Trovee's backend server calls Meta's oEmbed API to retrieve the post's embed HTML and thumbnail for display within the app.</li>
+          <li>The embedded content is displayed on the user's personal detail page alongside the original creator's attribution.</li>
+          <li>The oEmbed API is called server-side to render a front-end view of the saved content. No metadata is redistributed or displayed publicly.</li>
         </ol>
 
         <div class="flow-diagram">
@@ -387,7 +387,7 @@
           <div class="flow-arrow">&rarr;</div>
           <div class="flow-node">Meta oEmbed API</div>
           <div class="flow-arrow">&rarr;</div>
-          <div class="flow-node accent">Enriched content in app</div>
+          <div class="flow-node accent">Content displayed in app</div>
         </div>
       </div>
     </div>
